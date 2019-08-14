@@ -13,7 +13,7 @@ class UpdateDBWorker(context : Context, params : WorkerParameters)
     override fun doWork(): Result {
         return try {
             val app = applicationContext as MezuExerciseApp
-            Log.v(app.TAG, "Updating local DB with today user")
+            Log.v(app.TAG, "Updating local DB with the recent pictures")
 
             val sharedPreferences = app.getSharedPreferences("YAMA", Context.MODE_PRIVATE)
             val token = sharedPreferences.getString("token", null)
@@ -22,6 +22,7 @@ class UpdateDBWorker(context : Context, params : WorkerParameters)
             if (token != null) {
                 val repo = app.repo
                // updateUser(repo.userRepository, token)
+                //repo.picturesRepository.getPictures()
             }
             Result.SUCCESS
         } catch (error: VolleyError) {

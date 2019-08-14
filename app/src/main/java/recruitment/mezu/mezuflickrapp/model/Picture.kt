@@ -10,5 +10,6 @@ class Picture(
         val taken : String?,
         val location : String?,
         val url : String?,
-        val url_thumbnail : String?
+        val url_thumbnail : String?,
+        val page : Int
 )

@@ -15,17 +15,18 @@ class PicturesViewModel(app : MezuExerciseApp,
 
     val app = getApplication<MezuExerciseApp>()
 
-    fun getPictures(userId : String){
+    fun getPictures(userId : String, page : Int){
         if (!userId.isBlank()){
             repository.getPictures({
                     pictures.value = it
-                    Log.i(app.TAG, "Got pictures from API")
+                    Log.i(app.TAG, "Got pictures ready")
                 },
                 {
                     error.value = it
                     Log.e(app.TAG, it.plus("\t\tsomething went wrong when getting pictures from API"))
                 },
-                    userId)
+                    userId,
+                    page)
         }
     }
 }

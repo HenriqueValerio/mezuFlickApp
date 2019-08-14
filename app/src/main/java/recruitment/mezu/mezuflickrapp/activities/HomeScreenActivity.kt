@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -26,11 +27,13 @@ class HomeScreenActivity : AppCompatActivity() {
     }
 
     lateinit var app : MezuExerciseApp
-    lateinit var userViewModel : UserViewModel
-    var userId : String = ""
+    private lateinit var userViewModel : UserViewModel
+    private var userId : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         setContentView(R.layout.activity_home_screen)
 
         userViewModel = ViewModelProviders
@@ -38,7 +41,7 @@ class HomeScreenActivity : AppCompatActivity() {
                 .get(UserViewModel::class.java)
 
         start_button.setOnClickListener {
-            val launchIntent : Intent = Intent(this, PictureListActivity::class.java)
+            val launchIntent = Intent(this, PictureListActivity::class.java)
             launchIntent.putExtra("userId", userId)
             startActivity(launchIntent)
         }
@@ -57,15 +60,12 @@ class HomeScreenActivity : AppCompatActivity() {
             Log.v(app.TAG,"Success on fetching user")
             userId = it.id
             start_button.visibility = View.VISIBLE
-            textViewid.text = it?.id
-
-
+            //textViewid.text = it?.id
         })
 
         // Request failed. Delete SharedPreferences and retry login
         userViewModel.error.observe(this, Observer<String> {
             Log.v(app.TAG,"Error on fetching user")
-
         })
     }
 

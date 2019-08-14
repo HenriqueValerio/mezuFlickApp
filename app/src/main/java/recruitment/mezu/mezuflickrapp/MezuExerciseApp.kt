@@ -12,6 +12,7 @@ class MezuExerciseApp : Application(){
     val TAG : String = "MezuApp"
     lateinit var queue: RequestQueue
     lateinit var repo: Repository
+    var page = 1
 
     override fun onCreate() {
         super.onCreate()

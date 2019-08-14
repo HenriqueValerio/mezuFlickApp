@@ -9,6 +9,12 @@ interface PicturesDAO{
     @Query("SELECT * FROM pictures")
     fun getAll(): List<Picture>
 
+    @Query("SELECT * FROM pictures WHERE id = :id")
+    fun findById(id: String): Picture
+
+    @Query("SELECT * FROM pictures WHERE page = :page")
+    fun findByPage(page: Int): List<Picture>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll( picture: Picture)
 }

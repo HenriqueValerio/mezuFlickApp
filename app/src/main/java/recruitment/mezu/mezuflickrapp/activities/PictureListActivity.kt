@@ -1,6 +1,7 @@
 package recruitment.mezu.mezuflickrapp.activities
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -17,6 +18,7 @@ import recruitment.mezu.mezuflickrapp.viewmodel.PicturesViewModel
 
 class PictureListActivity : AppCompatActivity(){
 
+    lateinit var app : MezuExerciseApp
     lateinit var picturesViewModel: PicturesViewModel
 
     private fun getViewModelFactory(repo: PicturesRepository) = object : ViewModelProvider.Factory {
@@ -28,7 +30,10 @@ class PictureListActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         setContentView(R.layout.activity_picture_list)
+
+        app = application as MezuExerciseApp
 
         picture_list.setHasFixedSize(true)
         picture_list.layoutManager = LinearLayoutManager(this)
@@ -45,6 +50,18 @@ class PictureListActivity : AppCompatActivity(){
             finish()
         })
 
-        picturesViewModel.getPictures(intent.getStringExtra("userId"))
+        picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
+
+        previousPageBtn.setOnClickListener {
+            if (!app.page.equals(1))
+                app.page -=1
+            picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
+        }
+
+        nextPageBtn.setOnClickListener {
+            app.page +=1
+            picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
+        }
+
     }
 }
