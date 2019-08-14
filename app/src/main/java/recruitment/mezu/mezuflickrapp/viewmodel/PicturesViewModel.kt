@@ -7,8 +7,9 @@ import recruitment.mezu.mezuflickrapp.MezuExerciseApp
 import recruitment.mezu.mezuflickrapp.model.Picture
 import recruitment.mezu.mezuflickrapp.repositories.PicturesRepository
 
-class PicturesViewModel(app : MezuExerciseApp,
-                        private val repository: PicturesRepository) : AndroidViewModel (app){
+class PicturesViewModel(
+        app : MezuExerciseApp,
+        private val repository: PicturesRepository) : AndroidViewModel (app){
 
     var pictures: MutableLiveData<List<Picture>> = MutableLiveData()
     var error: MutableLiveData<String> = MutableLiveData()

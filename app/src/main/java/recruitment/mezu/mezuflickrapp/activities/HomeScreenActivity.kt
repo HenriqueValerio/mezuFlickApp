@@ -60,10 +60,9 @@ class HomeScreenActivity : AppCompatActivity() {
             Log.v(app.TAG,"Success on fetching user")
             userId = it.id
             start_button.visibility = View.VISIBLE
-            //textViewid.text = it?.id
         })
 
-        // Request failed. Delete SharedPreferences and retry login
+        // Request failed.
         userViewModel.error.observe(this, Observer<String> {
             Log.v(app.TAG,"Error on fetching user")
         })

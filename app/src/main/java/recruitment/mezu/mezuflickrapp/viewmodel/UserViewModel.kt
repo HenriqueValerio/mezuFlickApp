@@ -7,7 +7,6 @@ import recruitment.mezu.mezuflickrapp.MezuExerciseApp
 import recruitment.mezu.mezuflickrapp.model.User
 import recruitment.mezu.mezuflickrapp.repositories.UserRepository
 
-
 class UserViewModel(
         app: MezuExerciseApp,
         private val repo: UserRepository) : AndroidViewModel(app) {

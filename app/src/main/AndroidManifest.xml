@@ -22,7 +22,8 @@
         </activity>
         <activity android:name=".activities.PictureListActivity">
         </activity>
-        <activity android:name=".activities.PictureDetailsActivity">
+        <activity android:name=".activities.PictureDetailsActivity"
+            android:screenOrientation="portrait">
         </activity>
     </application>
 

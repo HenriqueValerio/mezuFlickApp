@@ -10,6 +10,8 @@ import recruitment.mezu.mezuflickrapp.model.User
 
 class UserRepository(private val app : MezuExerciseApp){
 
+    //API KEY SHOULD NOT BE IN THE URL. res/strings WAS CHANGING API_KEY VALUE.
+
     val ENDPOINT_URL = "https://www.flickr.com/services/rest/?method="
     val url_getUserId = ENDPOINT_URL.plus("flickr.people.findByUsername&format=json&api_key=76479578b1c3e371d8c0f649acd42647&username=eyetwist&nojsoncallback=1")
 

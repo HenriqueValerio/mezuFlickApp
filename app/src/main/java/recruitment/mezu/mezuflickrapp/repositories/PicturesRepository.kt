@@ -1,6 +1,7 @@
 package recruitment.mezu.mezuflickrapp.repositories
 
 import android.util.Log
+import android.widget.Toast
 import androidx.room.Room
 import com.android.volley.Request
 import com.android.volley.Response
@@ -10,22 +11,19 @@ import org.json.JSONObject
 import recruitment.mezu.mezuflickrapp.AsyncWork
 import recruitment.mezu.mezuflickrapp.MezuExerciseApp
 import recruitment.mezu.mezuflickrapp.model.Picture
-//import recruitment.mezu.mezuflickrapp.model.PictureGroup
 import recruitment.mezu.mezuflickrapp.model.PictureInfo
 import recruitment.mezu.mezuflickrapp.model.PictureURL
-//import recruitment.mezu.mezuflickrapp.model.database.PictureGroupDataBase
 import recruitment.mezu.mezuflickrapp.model.database.PicturesDataBase
 import recruitment.mezu.mezuflickrapp.runAsync
 import com.android.volley.toolbox.RequestFuture
-
-
-
 
 class PicturesRepository(private val app : MezuExerciseApp){
 
     private val ENDPOINT_URL = "https://www.flickr.com/services/rest/?method="
     private val picturesPerPage : Int = 25
-    private var page = app.page
+
+    //API KEY SHOULD NOT BE IN THE URL. res/strings WAS CHANGING API_KEY VALUE.
+
     private val url_getPublicPhotos = ENDPOINT_URL.plus("flickr.people.getPublicPhotos&api_key=76479578b1c3e371d8c0f649acd42647&per_page=".plus(picturesPerPage).plus("&format=json&nojsoncallback=1&user_id="))
     private val url_getInfo = ENDPOINT_URL.plus("flickr.photos.getInfo&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
     private val url_getSizes = ENDPOINT_URL.plus("flickr.photos.getSizes&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
@@ -36,10 +34,6 @@ class PicturesRepository(private val app : MezuExerciseApp){
             .databaseBuilder(app, PicturesDataBase::class.java, "pictures-db")
             .build()
 
-    /*private val pictureGroupDB = Room
-            .databaseBuilder(app, PictureGroupDataBase::class.java, "pictureGroup-db")
-            .build()*/
-
     private fun saveToPicturesDB(picture: Picture): AsyncWork<Picture> {
         return runAsync{
             Log.v(app.TAG, "Saving elements to DB")
@@ -47,14 +41,6 @@ class PicturesRepository(private val app : MezuExerciseApp){
             picture
         }
     }
-
-    /*private fun saveToPictureGroupDB(pictureGroup: PictureGroup): AsyncWork<PictureGroup> {
-        return runAsync{
-            Log.v(app.TAG, "Saving pic group to DB")
-            pictureGroupDB.pictureGroupDAO().insertAll(pictureGroup)
-            pictureGroup
-        }
-    }*/
 
     fun getPictures(successCb: (List<Picture>?) -> Unit, failCb: (String) -> Unit, userId : String, page : Int) {
         //getPublicPhotos(user_id) -> id, title
@@ -64,7 +50,6 @@ class PicturesRepository(private val app : MezuExerciseApp){
         pictures.clear()
 
         runAsync {
-            //pictureGroupDB.pictureGroupDAO().findById(app.page)
             picturesDB.pictureDAO().findByPage(page)
         }.andThen{
             if (it == null || it.isEmpty()){
@@ -88,17 +73,15 @@ class PicturesRepository(private val app : MezuExerciseApp){
         app.queue.add(request)
 
         try {
-            val response = future.get() // this will block
+            val response = future.get()
             processResponse(response, successCb, failCb, page, pictures)
         } catch (e: Exception) {
-            // exception handling
+            Toast.makeText(app,"Ooops", Toast.LENGTH_SHORT).show()
         }
     }
 
 
     private fun getPublicPhotos(successCb: (List<Picture>?) -> Unit, failCb: (String) -> Unit,userId: String, page : Int){
-
-
 
         val getPublicPhotosRequest = JsonObjectRequest(Request.Method.GET, url_getPublicPhotos.plus(userId).plus("&page=").plus(page), null,
                 Response.Listener { response ->
@@ -111,6 +94,8 @@ class PicturesRepository(private val app : MezuExerciseApp){
 
         app.queue.add(getPublicPhotosRequest)
     }
+
+    //Method with repeated code. Should be revised
 
     private fun processResponse(response: JSONObject?, successCb: (List<Picture>?) -> Unit, failCb: (String) -> Unit, page: Int, pictures : ArrayList<Picture>) {
         val jsonobj : JSONObject = response!!.getJSONObject("photos")

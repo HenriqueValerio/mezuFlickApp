@@ -43,6 +43,7 @@ class PictureListActivity : AppCompatActivity(){
                 .get(PicturesViewModel::class.java)
 
         picturesViewModel.pictures.observe(this, Observer {
+            PageTxtView.text = "Page ".plus(app.page)
             picture_list.adapter = PicturesAdapter(picturesViewModel, this, application as MezuExerciseApp)
         })
 
@@ -50,16 +51,19 @@ class PictureListActivity : AppCompatActivity(){
             finish()
         })
 
+        PageTxtView.text = "Loading Page ".plus(app.page)
         picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
 
         previousPageBtn.setOnClickListener {
             if (!app.page.equals(1))
                 app.page -=1
+            PageTxtView.text = "Loading Page ".plus(app.page)
             picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
         }
 
         nextPageBtn.setOnClickListener {
             app.page +=1
+            PageTxtView.text = "Loading Page ".plus(app.page)
             picturesViewModel.getPictures(intent.getStringExtra("userId"), app.page)
         }
 

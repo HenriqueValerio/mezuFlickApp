@@ -22,8 +22,6 @@ class PictureDetailsActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-
-        //WindowManager.LayoutParams(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         setContentView(R.layout.picture_details_layout)
 
         app = application as MezuExerciseApp
@@ -32,20 +30,17 @@ class PictureDetailsActivity : AppCompatActivity(){
         location.text = intent.getStringExtra("location")
         date.text = intent.getStringExtra("taken")
         val url = intent.getStringExtra("url")
-        //runAsync {
-            getImage(
-                url,
-                {
-                    picture_large.setImageBitmap(it)
-                    Log.i(app.TAG, "Fetching image on details")
-                },
-                {
-                    Log.e(app.TAG, it)
-                },
-                app
-            )
-        //}
-
+        getImage(
+            url,
+            {
+                picture_large.setImageBitmap(it)
+                Log.i(app.TAG, "Fetching image on details")
+            },
+            {
+                Log.e(app.TAG, it)
+            },
+            app
+        )
 
     }
 
