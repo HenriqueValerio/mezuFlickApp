@@ -1,32 +1,58 @@
 package recruitment.mezu.mezuflickrapp.repositories
 
 import android.util.Log
+import androidx.room.Room
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import org.json.JSONArray
 import org.json.JSONObject
+import recruitment.mezu.mezuflickrapp.AsyncWork
 import recruitment.mezu.mezuflickrapp.MezuExerciseApp
 import recruitment.mezu.mezuflickrapp.model.Picture
 import recruitment.mezu.mezuflickrapp.model.PictureInfo
 import recruitment.mezu.mezuflickrapp.model.PictureURL
+import recruitment.mezu.mezuflickrapp.model.database.PicturesDataBase
+import recruitment.mezu.mezuflickrapp.runAsync
 
 
 class PicturesRepository(private val app : MezuExerciseApp){
 
-    val ENDPOINT_URL = "https://www.flickr.com/services/rest/?method="
-    val picturesPerPage : Int = 25
-    val url_getPublicPhotos = ENDPOINT_URL.plus("flickr.people.getPublicPhotos&api_key=76479578b1c3e371d8c0f649acd42647&per_page=".plus(picturesPerPage).plus("&format=json&nojsoncallback=1&user_id="))
-    val url_getInfo = ENDPOINT_URL.plus("flickr.photos.getInfo&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
-    val url_getSizes = ENDPOINT_URL.plus("flickr.photos.getSizes&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
-    var pictures : ArrayList<Picture> = ArrayList()
+    private val ENDPOINT_URL = "https://www.flickr.com/services/rest/?method="
+    private val picturesPerPage : Int = 25
+    private val url_getPublicPhotos = ENDPOINT_URL.plus("flickr.people.getPublicPhotos&api_key=76479578b1c3e371d8c0f649acd42647&per_page=".plus(picturesPerPage).plus("&format=json&nojsoncallback=1&user_id="))
+    private val url_getInfo = ENDPOINT_URL.plus("flickr.photos.getInfo&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
+    private val url_getSizes = ENDPOINT_URL.plus("flickr.photos.getSizes&api_key=76479578b1c3e371d8c0f649acd42647&format=json&nojsoncallback=1&photo_id=")
+    private var pictures : ArrayList<Picture> = ArrayList()
+
+
+    private val picturesDB = Room
+            .databaseBuilder(app, PicturesDataBase::class.java, "pictures-db")
+            .build()
+
+    private fun saveToDB(picture: Picture): AsyncWork<Picture> {
+        return runAsync{
+            Log.v(app.TAG, "Saving elements to DB")
+            picturesDB.pictureDAO().insertAll(picture)
+            picture
+        }
+    }
 
     fun getPictures(successCb: (List<Picture>?) -> Unit, failCb: (String) -> Unit, userId : String) {
         //getPublicPhotos(user_id) -> id, title
         //getInto(photo_id) -> taken, location, url
         //getSizes(photo_id) -> url_thumbnail
 
-        getPublicPhotos(successCb,failCb, userId)
+        runAsync {
+            picturesDB.pictureDAO().getAll()
+        }.andThen{
+            if (it == null || it.isEmpty())
+                getPublicPhotos(successCb,failCb, userId)
+            else {
+                Log.v(app.TAG, "Got pics from DB")
+                successCb(it)
+            }
+        }
     }
 
 
@@ -36,29 +62,32 @@ class PicturesRepository(private val app : MezuExerciseApp){
                 Response.Listener { response ->
                     val jsonobj : JSONObject = response.getJSONObject("photos")
                     val photos : JSONArray = jsonobj.getJSONArray("photo")
-                    var compleated : Int = 0
+                    var completed = 0
 
                     for (i in 0 until photos.length()){
                         val loc = photos.get(i) as JSONObject
-                        var operationsCompleated : Int = 0
+                        var operationsCompleted : Int = 0
 
                         val id : String = loc.getString("id")
                         val title : String = loc.getString("title")
                         var taken : String? = ""
                         var location : String? = ""
                         var url : String? = ""
-                        var url_thumbnail : String? = ""
+                        var urlThumbnail : String? = ""
 
                         getInfo({
                             taken = it?.taken
                             location = it?.location
-                            operationsCompleated +=1
+                            operationsCompleted +=1
 
-                            if (operationsCompleated.equals(2)){
-                                pictures!!.add(Picture(id,title, taken, location, url, url_thumbnail))
-                                compleated+=1
-                                if (compleated.equals(picturesPerPage))
-                                    successCb(pictures)
+                            if (operationsCompleted.equals(2)){
+                                val pic = Picture(id,title, taken, location, url, urlThumbnail)
+                                saveToDB(pic).andThen {
+                                    pictures!!.add(pic)
+                                    completed+=1
+                                    if (completed.equals(picturesPerPage))
+                                        successCb(pictures)
+                                }
                             }
 
                         },{
@@ -67,14 +96,17 @@ class PicturesRepository(private val app : MezuExerciseApp){
 
                         getURL({
                             url = it?.url
-                            url_thumbnail = it?.url_thumbnail
-                            operationsCompleated+=1
+                            urlThumbnail = it?.url_thumbnail
+                            operationsCompleted+=1
 
-                            if (operationsCompleated.equals(2)){
-                                pictures?.add(Picture(id,title, taken, location, url, url_thumbnail))
-                                compleated+=1
-                                if (compleated.equals(picturesPerPage))
-                                    successCb(pictures)
+                            if (operationsCompleted.equals(2)){
+                                val pic = Picture(id,title, taken, location, url, urlThumbnail)
+                                saveToDB(pic).andThen {
+                                    pictures!!.add(pic)
+                                    completed+=1
+                                    if (completed.equals(picturesPerPage))
+                                        successCb(pictures)
+                                }
                             }
 
                         },{
@@ -144,8 +176,8 @@ class PicturesRepository(private val app : MezuExerciseApp){
 
                     val jsonobj : JSONObject = response.getJSONObject("sizes")
                     val size : JSONArray = jsonobj.getJSONArray("size")
-                    var urlSquare : String = ""
-                    var urlThumbnail : String = ""
+                    var urlSquare = ""
+                    var urlThumbnail = ""
 
                     for (i in 0 until size.length()){
                         val loc = size.get(i) as JSONObject
