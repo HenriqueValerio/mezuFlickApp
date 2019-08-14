@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MezuFlickrApp</string>
+    <string name="developer_name">Henrique Valério</string>
+    <string name="developer_email">henrikvalerio@hotmail.com</string>
+    <string name="flickr_username">eyetwist</string>
+    <string name="api_key">76479578b1c3e371d8c0f649acd42647</string>
+</resources>
